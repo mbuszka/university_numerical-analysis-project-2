@@ -1,57 +1,110 @@
 include("spline.jl")
 using PlotlyJS
 
-function test_sin()
-  n = 10
-  xs = linspace(0, 2π, n+1)
-  ys = sin(xs)
-  ds = cos(xs[2:end])
-  a, b, c, g, h, f = build_matrix(xs, ys)
-  s, k = spline_cyclic(xs, ys)
-  for i in 2 : n-1
-    @printf("%e\t%e\t%e\n", c[i-1] * k[i-1] + a[i] * k[i] + b[i] * k[i+1] - g[i], 
-            c[i-1] * ds[i-1] + a[i] * ds[i] + b[i] * ds[i+1] - g[i],
-            k[i] - ds[i])
-  end
-  @printf("%e\t%e\t%e\n", c[n-1] * k[n-1] + a[n] * k[n] + b[n] * k[1] - g[n], 
-          c[n-1] * ds[n-1] + a[n] * ds[n] + b[n] * ds[1] - g[n],
-          k[n] - ds[n])
-  a, b = reduce_matrix(a, b, c)
-  c = b
-  println("-----------------\n")
-  for i in 2 : n-1
-    @printf("%e\t%e\t%e\n", c[i-1] * k[i-1] + a[i] * k[i] + b[i] * k[i+1] - g[i], 
-            c[i-1] * ds[i-1] + a[i] * ds[i] + b[i] * ds[i+1] - g[i],
-            k[i] - ds[i])
-  end
-  @printf("%e\t%e\t%e\n", c[n-1] * k[n-1] + a[n] * k[n] + b[n] * k[1] - g[n], 
-          c[n-1] * ds[n-1] + a[n] * ds[n] + b[n] * ds[1] - g[n],
-          k[n] - ds[n])
+
+# !!!! SPAMIĘTAJ WYNIKI ROZKŁADU Z X, MOŻNA JE UŻYĆ DO ROZWIĄZANIA X
+# !!!! OSZACOWAĆ JAKOŚ BŁĄD (TEN WZÓR ZE STAŁYMI Z CZAPKI)
+
+
+function test_sin(n = 10)
+  test_fun(sin, linspace(0, 2π, n))
 end
 
-function test_k()
-  n = 10
-  xs = linspace(0, 2π, n+1)
-  ys = cos(xs)
-  dds = -cos(xs[2:end])
-  k = spline_cyclic_k(xs, ys)
-  @show k
-  plot([scatter(; x = xs[2:end], y = k), scatter(; x = xs[2:end], y = dds)])
+function test_cos(n = 10)
+  test_fun(cos, linspace(0, 2π, n))
 end
 
+function test_fun(f, xs)
+  ys  = [ f(x) for x in xs ]
+  xss = linspace(xs[1], xs[end], size(xs, 1) * 10)
+  yss = [ f(x) for x in xss ]
+  s   = spline_periodic(xs, ys)
+  tss = [ s(x) for x in xss ]
+  plot([scatter(; x = xss, y = yss, name = "f")
+       ,scatter(; x = xss, y = tss, name = "s")
+       ])
+end
 
-function test()
-  f = cos
-  xs = linspace(-π, π, 11)
-  ys = f(xs)
-  xss = linspace(-π, π, 1000)
+function sample_ellipse(a, b, n)
+  ts = linspace(0, 2π, n)
+  xs = [ a * cos(t) for t in ts ]
+  ys = [ b * sin(t) for t in ts ]
+  xs, ys
+end
 
-  s, k = spline_cyclic_k(xs, ys, debug = true)
-  tss = [ s(x) for x = xss ]
-  yss = [ x for (x, d, dd) = tss ]
-  dss = [ d for (x, d, dd) = tss ]
-  ddss = [ dd for (x, d, dd) = tss ]
-  plot([ scatter(;x = xss, y = yss), scatter(;x = xss, y = dss)
-        ,scatter(;x = xss, y = ddss), scatter(;x = xss, y = f(xss))
-        ,scatter(;x = xs[2:end], y = k)])
+function sample_mysterious()
+  xs = [ 3.7, 3.2, 2.7, 2.1, 1.7, 1.1, 0.7, 0.4
+       , 0.4, 0.5, 0.3, 0.6, 0.6, 0.7, 0.6, 0.8
+       , 0.8, 0.6, 0.8, 0.9, 1.1, 1.4, 1.8, 1.7
+       , 1.9, 2.2, 2.1, 2.7, 2.6, 3.3, 3.5, 3.7
+       , 3.9, 4.2, 4.3, 4.5, 4.7, 5.0, 5.5, 5.9
+       , 6.2, 6.4, 6.3, 6.5, 6.8, 7.2, 7.1, 7.2
+       , 6.8, 6.7, 6.8, 6.4, 6.2, 6.9, 6.8, 6.6
+       , 6.5, 6.1, 5.5, 5.0, 4.6, 4.1, 3.7, 3.4
+       , 3.2, 3.7
+       ]
+
+  ys = [ 6.4, 6.7, 6.5, 6.4, 6.0, 5.9, 5.7, 5.7
+       , 5.4, 5.0, 4.6, 4.3, 4.0, 3.7, 3.2, 2.9
+       , 2.6, 2.4, 2.3, 2.4, 2.2, 2.1, 2.0, 1.8
+       , 1.4, 1.5, 1.8, 1.6, 1.4, 1.3, 0.9, 0.6
+       , 0.8, 0.7, 0.4, 0.5, 0.7, 0.6, 0.8, 0.6
+       , 0.4, 0.3, 0.7, 1.2, 1.7, 2.0, 2.2, 2.4
+       , 2.8, 3.2, 3.6, 3.9, 4.2, 4.5, 5.1, 5.6
+       , 6.0, 6.2, 6.1, 6.2, 6.2, 6.3, 6.0, 6.1
+       , 6.5, 6.4
+       ]
+
+  xs, ys
+end
+
+function sample_lissajous(a, b, n)
+  ts = linspace(0, 2π, n)
+  xs = [ cos(a * t) for t in ts ]
+  ys = [ sin(b * t) for t in ts ]
+  xs, ys
+end
+
+function sample_hypotrochoid(R, r, d, n)
+  ts = linspace(0, 2 * 3 * π, n)
+  xs = [ (R - r) * cos(t) + d * cos((R - r) / r * t) for t in ts ]
+  ys = [ (R - r) * sin(t) - d * sin((R - r) / r * t) for t in ts ]
+  xs, ys
+end
+
+function sample_linearfail()
+  xs = [0.0, 1.0, 2.0, -7.0, -2.0]
+  ys = [1.0, 2.0, 0.0, -18.0, -4.0]
+  xs, ys
+end
+
+function show_curve(curve)
+  xs, ys = curve(1000)
+  scatter(; x = xs, y = ys)
+end
+
+function test_curve(curve, mode, n = 100)
+  xs, ys = curve(n)
+  sx, sy, ti = interpolate_curve(xs, ys, mode)
+  ts = linspace(0, ti[end], 1000)
+  fx = [ sx(t) for t in ts ]
+  fy = [ sy(t) for t in ts ]
+  scatter(; x = fx, y = fy)
+end
+
+function interpolate_curve(xs, ys, mode)
+  n = size(xs, 1)
+  if     mode == "equidistant"
+    ts = linspace(0, n-1, n)
+  elseif mode == "cumulative"
+    d  = similar(xs)
+    d[1] = zero(eltype(xs))
+    for i in 2 : n
+      d[i] = d[i-1] + sqrt((xs[i] - xs[i-1]) ^ 2 + (ys[i] - ys[i-1]) ^ 2)
+    end
+    ts = [ p / d[n] for p in d ]
+  end
+  sx = spline_periodic(ts, xs)
+  sy = spline_periodic(ts, ys)
+  sx, sy, ts
 end

@@ -1,0 +1,104 @@
+\documentclass[11pt,wide]{mwart}
+\usepackage[utf8]{inputenc} 
+\usepackage[OT4,plmath]{polski}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{epstopdf}
+\usepackage{alltt}
+\usepackage[section]{placeins}
+\usepackage{graphicx}
+
+\usepackage{amsmath,amssymb,amsfonts,amsthm,mathtools}
+
+
+\usepackage{bbm}
+\usepackage{hyperref}
+\usepackage{url}
+
+\usepackage{comment}
+
+\date{Wrocław, \today}
+\title{\LARGE\textbf{Pracownia z analizy numerycznej}
+  \\Sprawozdanie do zadania \textbf{P2.11.}}
+
+\author{Maciej Buszka}
+
+\newtheorem{tw}{Twierdzenie}
+\newtheorem{alg}{Algorytm}
+\newtheorem{defn}{Definicja}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\tableofcontents
+
+\section{Wstęp}
+\section{Interpolacja funkcją sklejaną III stopnia}
+
+\subsection{Definicje}
+
+\begin{defn}
+
+Niech punkty $ (t_0, y_0) , \ldots, (t_n, y_n) $ będą węzłami interpolacji, wtedy funkcją sklejaną III stopnia nazywamy funkcję $ s: [t_0, t_n] \rightarrow \mathbb{R} $ spełniającą następujące warunki:
+\begin{enumerate}
+\item $ s(x_i) = y_i $
+\item W każdym z przedziałów $ [t_{i-1}, t_i ) $, $ i = 1, \ldots, n $ $ s = s_i $  jest wielomianem trzeciego stopnia.
+\item s ma ciągłą pierwszą i drugą pochodną (w przedziale $ [t_0, t_n] $).
+\end{enumerate}
+
+\end{defn}
+
+Zauważmy, że taka definicja funkcji interpolującej układ punktów $ (t_0, y_0) , \ldots, (t_n, y_n) $ generuje następujące warunki, które $ s $ musi spełniać:
+
+\begin{align}
+	s(t_i) &= y_i               		&\text{dla }& i = 0, \ldots, n \\
+	s_i(t_{i}) &= y_i = s_{i+1}(t_{i}) 	&\text{dla }& i = 1, \ldots, n-1 \label{eq:scont}\\
+	s_i'(t_{i}) &= s_{i+1}'(t_i) 		&\text{dla }& i = 1, \ldots, n-1 \label{eq:dscont}\\
+	s_i''(t_{i}) &= s_{i+1}''(t_i) 	    &\text{dla }& i = 1, \ldots, n-1 \label{eq:ddscont}
+\end{align}
+Łącznie równania te dają $ 4n - 2 $ warunki, a każdy z $ n $ wielomianów $ s_i $ ma $ 4 $ współczynniki, pozostają zatem jeszcze dwa dodatkowe warunki, które można zadać funkcji $ s $ w pozostałej części sprawozdania rozważana będzie okresowa funkcja sklejana trzeciego stopnia.
+\begin{defn} Jeżeli węzły $ (t_0, y_0) $ i $ (t_n, y_n) $ są sobie równe, to funkcję sklejaną $ s $ interpolującą węzły $ (t_0, y_0) , \ldots, (t_n, y_n) $ nazywamy okresową, jeżeli
+\begin{align}
+s'(t_0) &= s'(t_n) \\
+s''(t_0) &= s''(t_n)
+\end{align}
+\end{defn}
+
+\subsection{Wyprowadzenie układu równań}
+
+Niech dane będą punkty $ (t_0, y_0) , \ldots, (t_n, y_n) $. Wprowadźmy oznaczenie $ k_i = s''(t_i) $ i rozpatrzmy $ s_i $ w przedziale $ [t_i, t_{i+1} ) $. Z definicji $ s_i $ jest wielomianem trzeciego stopnia, zatem $ s_i'' $ jest funkcją liniową. Z warunku \eqref{eq:ddscont} wynika zatem, że
+\begin{equation}
+	as
+\end{equation}
+
+\section{Krzywa parametryczna}
+\section{Wyniki eksperymentów}
+\section{Analiza wyników}
+\section{Wnioski}
+
+\begin{thebibliography}{99}
+
+\bibitem{kincaid} David Kincaid, Ward Cheney, przekł.~Stefan Paszkowski,
+\emph{Analiza numeryczna},
+Warszawa, WNT, 2006.
+
+\bibitem{dahlquist} Germund Dahlquist, \r{A}ke Bj\"{o}rck,
+\emph{Numerical Methods in Scientific Computing Volume I}
+SIAM, 2008
+
+\bibitem{bjorck} \r{A}ke Bj\"{o}rck, Germund Dahlquist, przekł.~Stefan Paszkowski
+\emph{Metody Numeryczne},
+Warszawa, PWN, 1987
+
+\bibitem{eigen} \r{A}ke Bj\"{o}rck, Gene H. Golub
+\emph{Eigenproblems for Matrices Associated with Periodic Boundary Conditions}
+
+\bibitem{epstein} M. P. Epstein, 
+\emph{On the Influence of Parametrization in Parametric Interpolation},
+SIAM Journal on Numerical Analysis Volume 13, Issue 2, 1976
+
+
+\end{thebibliography}
+
+\end{document}
