@@ -1,10 +1,7 @@
+# Maciej Buszka
+
 include("spline.jl")
-using PlotlyJS
-
-
-# !!!! SPAMIĘTAJ WYNIKI ROZKŁADU Z X, MOŻNA JE UŻYĆ DO ROZWIĄZANIA X
-# !!!! OSZACOWAĆ JAKOŚ BŁĄD (TEN WZÓR ZE STAŁYMI Z CZAPKI)
-
+using Plotly
 
 function test_sin(n = 10)
   test_fun(sin, linspace(0, 2π, n))
@@ -12,6 +9,20 @@ end
 
 function test_cos(n = 10)
   test_fun(cos, linspace(0, 2π, n))
+end
+
+function randspace(from, to, steps)
+  ts = zeros(typeof(to), steps)
+  c  = zero(typeof(to))
+  for i in 2 : steps
+    c += rand(typeof(to))
+    ts[i] = c
+  end
+  for i in 1 : steps
+    ts[i] *= (to - from) / c
+    ts[i] += from
+  end
+  ts
 end
 
 function test_fun(f, xs)
@@ -25,8 +36,8 @@ function test_fun(f, xs)
        ])
 end
 
-function sample_ellipse(a, b, n)
-  ts = linspace(0, 2π, n)
+function sample_ellipse(a, b, points)
+  ts = 2π * points
   xs = [ a * cos(t) for t in ts ]
   ys = [ b * sin(t) for t in ts ]
   xs, ys
@@ -58,38 +69,33 @@ function sample_mysterious()
   xs, ys
 end
 
-function sample_lissajous(a, b, n)
-  ts = linspace(0, 2π, n)
+function sample_lissajous(a, b, points)
+  ts = 2π * points
   xs = [ cos(a * t) for t in ts ]
   ys = [ sin(b * t) for t in ts ]
   xs, ys
 end
 
-function sample_hypotrochoid(R, r, d, n)
-  ts = linspace(0, 2 * 3 * π, n)
+function sample_hypotrochoid(R, r, d, points)
+  ts = (R-r+1) * 2 * π * points
   xs = [ (R - r) * cos(t) + d * cos((R - r) / r * t) for t in ts ]
   ys = [ (R - r) * sin(t) - d * sin((R - r) / r * t) for t in ts ]
   xs, ys
 end
 
-function sample_linearfail()
-  xs = [0.0, 1.0, 2.0, -7.0, -2.0]
-  ys = [1.0, 2.0, 0.0, -18.0, -4.0]
-  xs, ys
-end
-
 function show_curve(curve)
-  xs, ys = curve(1000)
-  scatter(; x = xs, y = ys)
+  xs, ys = curve(linspace(0, 1, 1000))
+  scatter(; x = xs, y = ys, name = "krzywa")
 end
 
-function test_curve(curve, mode, n = 100)
-  xs, ys = curve(n)
+function test_curve(curve, mode, points)
+  xs, ys = curve(points)
+  n      = size(xs, 1)
   sx, sy, ti = interpolate_curve(xs, ys, mode)
   ts = linspace(0, ti[end], 1000)
   fx = [ sx(t) for t in ts ]
   fy = [ sy(t) for t in ts ]
-  scatter(; x = fx, y = fy)
+  scatter(; x = fx, y = fy, name = "interpolant w $n punktach")
 end
 
 function interpolate_curve(xs, ys, mode)
@@ -104,7 +110,7 @@ function interpolate_curve(xs, ys, mode)
     end
     ts = [ p / d[n] for p in d ]
   end
-  sx = spline_periodic(ts, xs)
-  sy = spline_periodic(ts, ys)
+  sx, memo = spline_periodic(ts, xs)
+  sy, _    = spline_periodic(ts, ys; memoized = memo)
   sx, sy, ts
 end
